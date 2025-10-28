@@ -43,8 +43,6 @@ O frontend é **fictício**, apenas para fins de apresentação, enquanto o back
 
 ---
 
-## Como executar (desenvolvimento)
+## Atuação de troca de link
 
-### Backend (PHP)
-```bash
-php backend/monitor.php
+https://youtu.be/ej3fDtMN-uA
