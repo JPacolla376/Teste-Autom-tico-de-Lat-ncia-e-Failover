@@ -10,30 +10,29 @@ $links = [
 // Número de pings por IP
 $PING_COUNT = 3;
 
+// Intervalo entre testes (em segundos)
+$INTERVALO = 10; // ajuste conforme necessidade
+
 // Função para medir latência real via ping (Linux)
 function medirLatencia($ip, $pings = 3) {
     $saida = [];
     $status = 0;
-
-    // Executa ping
     exec("ping -c $pings $ip", $saida, $status);
 
     if ($status !== 0) {
-        // IP inacessível
-        return PHP_INT_MAX;
+        return PHP_INT_MAX; // IP inacessível
     }
 
-    // Analisa saída do ping
     foreach ($saida as $linha) {
         if (preg_match('/rtt min\/avg\/max\/mdev = ([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+)\/([0-9\.]+) ms/', $linha, $matches)) {
-            return floatval($matches[2]); // Retorna latência média
+            return floatval($matches[2]); // latência média
         }
     }
 
     return PHP_INT_MAX;
 }
 
-// Avalia os IPs de cada link
+// Função que avalia os IPs de cada link
 function avaliarLink($nome, $ips, $pings) {
     $melhorIP = null;
     $melhorLatencia = PHP_INT_MAX;
@@ -53,26 +52,31 @@ function avaliarLink($nome, $ips, $pings) {
     ];
 }
 
-// Avaliar todos os links
-$resultados = [];
-foreach ($links as $nome => $ips) {
-    $resultados[] = avaliarLink($nome, $ips, $PING_COUNT);
+// Loop infinito de monitoramento
+while (true) {
+    $resultados = [];
+    foreach ($links as $nome => $ips) {
+        $resultados[] = avaliarLink($nome, $ips, $PING_COUNT);
+    }
+
+    // Ordenar por melhor latência
+    usort($resultados, function($a, $b) {
+        return $a['latencia'] - $b['latencia'];
+    });
+
+    // Link ativo é o de menor latência
+    $linkAtivo = $resultados[0];
+
+    // Log simples
+    $log = date("Y-m-d H:i:s") . " - Link Ativo: {$linkAtivo['nome']} ({$linkAtivo['melhor_ip']}) Latência: {$linkAtivo['latencia']} ms" . PHP_EOL;
+    file_put_contents("latencia.log", $log, FILE_APPEND);
+
+    // Retornar JSON (opcional, se rodar via browser/terminal)
+    echo json_encode([
+        "links" => $resultados,
+        "ativo" => $linkAtivo
+    ], JSON_PRETTY_PRINT);
+
+    // Aguardar intervalo antes do próximo teste
+    sleep($INTERVALO);
 }
-
-// Ordenar por melhor latência
-usort($resultados, function($a, $b) {
-    return $a['latencia'] - $b['latencia'];
-});
-
-// Definir link ativo
-$linkAtivo = $resultados[0];
-
-// Log simples
-$log = date("Y-m-d H:i:s") . " - Link Ativo: {$linkAtivo['nome']} ({$linkAtivo['melhor_ip']}) Latência: {$linkAtivo['latencia']} ms" . PHP_EOL;
-file_put_contents("latencia.log", $log, FILE_APPEND);
-
-// Retornar JSON
-echo json_encode([
-    "links" => $resultados,
-    "ativo" => $linkAtivo
-], JSON_PRETTY_PRINT);
