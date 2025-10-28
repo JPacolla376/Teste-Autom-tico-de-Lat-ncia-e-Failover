@@ -1,0 +1,195 @@
+<!DOCTYPE html>
+<html lang="pt-br">
+<head>
+<meta charset="UTF-8">
+<title>Firewall Dashboard - Simulação</title>
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<style>
+/* Estilo legível e UX-friendly */
+body {
+    background-color: #121212;
+    color: #FFFFFF;
+    font-family: 'Arial', sans-serif;
+    margin: 0;
+    padding: 20px;
+}
+h1 {
+    text-align: center;
+    color: #FF9800;
+    margin-bottom: 30px;
+}
+
+/* Container geral */
+#dashboard {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-around;
+}
+
+/* Painéis dos links */
+.link-panel {
+    background-color: #1E1E1E;
+    border-radius: 12px;
+    padding: 20px;
+    margin: 10px;
+    width: 300px;
+    text-align: center;
+    transition: all 0.3s ease;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+.link-panel.ativo {
+    background-color: #4CAF50;
+    color: #121212;
+    box-shadow: 0 0 15px #4CAF50;
+}
+.link-panel.inativo {
+    background-color: #333;
+    color: #FFFFFF;
+}
+
+.link-panel h2 {
+    margin: 0;
+    margin-bottom: 10px;
+    font-size: 22px;
+}
+.link-panel p {
+    margin: 5px 0;
+    font-size: 16px;
+}
+
+/* Gráfico */
+#grafico-container {
+    width: 700px;
+    margin: 30px auto;
+    background-color: #1E1E1E;
+    border-radius: 12px;
+    padding: 20px;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+
+/* Histórico de failovers */
+#history {
+    width: 700px;
+    margin: 20px auto;
+    background-color: #1E1E1E;
+    border-radius: 12px;
+    padding: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    box-shadow: 0 0 10px rgba(0,0,0,0.5);
+}
+#history h3 {
+    margin-top: 0;
+    color: #FF9800;
+}
+.history-item {
+    margin: 5px 0;
+    font-size: 14px;
+}
+</style>
+</head>
+<body>
+<h1> Dashboard - Simulação de Failover</h1>
+
+<div id="dashboard">
+    <div class="link-panel ativo" id="linkA">
+        <h2>Link A</h2>
+        <p>IP monitor: <span id="ipA">200.160.6.4</span></p>
+        <p>Latência: <span id="latA">50</span> ms</p>
+        <p>Download: <span id="downA">120</span> Mbps</p>
+        <p>Status: <span id="statusA">Ativo</span></p>
+    </div>
+    <div class="link-panel inativo" id="linkB">
+        <h2>Link B</h2>
+        <p>IP monitor: <span id="ipB">8.8.8.8</span></p>
+        <p>Latência: <span id="latB">100</span> ms</p>
+        <p>Download: <span id="downB">90</span> Mbps</p>
+        <p>Status: <span id="statusB">Inativo</span></p>
+    </div>
+</div>
+
+<div id="grafico-container">
+    <canvas id="grafico"></canvas>
+</div>
+
+<div id="history">
+    <h3>Histórico de Failovers</h3>
+    <div id="failovers"></div>
+</div>
+
+<script>
+// Dados fictícios
+let links = ["linkA", "linkB"];
+let ativo = 0;
+let latencias = [50, 100];
+let downloads = [120, 90];
+let failoverHistory = [];
+
+// Inicializar gráfico
+const ctx = document.getElementById('grafico').getContext('2d');
+const chart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        labels: Array.from({length: 20}, (_, i) => i + 1), // tempo fictício
+        datasets: [
+            {
+                label: 'Link A Latência (ms)',
+                data: Array(20).fill(latencias[0]),
+                borderColor: '#4CAF50',
+                backgroundColor: 'rgba(76,175,80,0.2)',
+                tension: 0.3
+            },
+            {
+                label: 'Link B Latência (ms)',
+                data: Array(20).fill(latencias[1]),
+                borderColor: '#FF9800',
+                backgroundColor: 'rgba(255,152,0,0.2)',
+                tension: 0.3
+            }
+        ]
+    },
+    options: {
+        scales: { y: { beginAtZero: true, max: 200 } },
+        plugins: { legend: { labels: { color: '#FFFFFF' } } }
+    }
+});
+
+// Simulação de atualização e failover
+setInterval(() => {
+    let anterior = ativo;
+    ativo = (ativo + 1) % links.length;
+
+    // Atualiza painéis
+    document.getElementById('linkA').className = "link-panel " + (ativo === 0 ? "ativo" : "inativo");
+    document.getElementById('linkB').className = "link-panel " + (ativo === 1 ? "ativo" : "inativo");
+
+    // Atualiza dados fictícios de latência/download
+    latencias = [Math.floor(Math.random()*100)+20, Math.floor(Math.random()*100)+20];
+    downloads = [Math.floor(Math.random()*200)+50, Math.floor(Math.random()*200)+50];
+
+    document.getElementById('latA').textContent = latencias[0];
+    document.getElementById('latB').textContent = latencias[1];
+    document.getElementById('downA').textContent = downloads[0];
+    document.getElementById('downB').textContent = downloads[1];
+    document.getElementById('statusA').textContent = ativo === 0 ? "Ativo" : "Inativo";
+    document.getElementById('statusB').textContent = ativo === 1 ? "Ativo" : "Inativo";
+
+    // Atualiza gráfico
+    chart.data.datasets[0].data.push(latencias[0]);
+    chart.data.datasets[0].data.shift();
+    chart.data.datasets[1].data.push(latencias[1]);
+    chart.data.datasets[1].data.shift();
+    chart.update();
+
+    // Adiciona histórico de failover
+    if (ativo !== anterior) {
+        let now = new Date().toLocaleTimeString();
+        failoverHistory.unshift(`<div class="history-item">${now} - Failover para ${ativo===0 ? 'Link A' : 'Link B'}</div>`);
+        if (failoverHistory.length > 10) failoverHistory.pop();
+        document.getElementById('failovers').innerHTML = failoverHistory.join('');
+    }
+
+}, 3000);
+</script>
+</body>
+</html>
