@@ -13,7 +13,6 @@ Projeto demonstrativo que implementa:
 - `/backend/monitor.php` — script PHP que mede métricas, escolhe o melhor IP/link e gera logs.  
 - `/backend/config.json` — lista de links, IPs de monitoramento e thresholds.  
 - `/frontend/index.html` — dashboard fictício que simula visualmente a troca de links.  
-- `/media/demo.gif` — demonstração animada do frontend para apresentação.
 
 ---
 
