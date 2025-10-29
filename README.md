@@ -3,8 +3,7 @@
 Projeto demonstrativo que implementa:
 
 - **Backend (PHP)** para testar automaticamente a qualidade de links (latência, perda de pacotes e taxa de download) usando **2 IPs de monitoramento por link**.  
-- **Frontend simulado (HTML/CSS/JS)** para apresentar visualmente a troca de links (failover) em formato de **dashboard cyber-style**.  
-- **Demonstração animada (GIF)** do failover automático.
+- **Frontend simulado (HTML/CSS/JS)** para apresentar visualmente a troca de links (failover) em formato de.  
 
 ---
 
@@ -20,7 +19,7 @@ Projeto demonstrativo que implementa:
 
 Demonstrar um **teste automático de qualidade de links** e como decisões automáticas de failover podem ser tomadas com base em métricas de latência, perda de pacotes e throughput.  
 
-O frontend é **fictício**, apenas para fins de apresentação, enquanto o backend PHP realiza testes automatizados reais.
+O frontend é uma simulação, apenas para fins de apresentação, enquanto o backend PHP realiza testes automatizados reais.
 
 ---
 
